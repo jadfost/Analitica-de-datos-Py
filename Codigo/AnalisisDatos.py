@@ -2,8 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-df = pd.read_csv('PANDAS\EstudiantesRendimiento.csv')
-df1 = pd.read_csv('PANDAS\Paises.csv')
+df = pd.read_csv('Codigo/EstudiantesRendimiento.csv')
+df1 = pd.read_csv('Codigo/Paises.csv')
 
 
 
