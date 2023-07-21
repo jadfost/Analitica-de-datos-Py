@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-df = pd.read_csv('PANDAS\EstudiantesRendimiento.csv')
+df = pd.read_csv('Codigo/EstudiantesRendimiento.csv')
 
 with_edc = len(df[df['parental level of education']!='some college'])
 

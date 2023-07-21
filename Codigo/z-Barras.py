@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-df = pd.read_csv('PANDAS\menu.csv')
+df = pd.read_csv('Codigo/menu.csv')
 
 a = len(df[df['Category']=='Breakfast'])
 b = len(df[df['Category']=='Beef & Pork'])
