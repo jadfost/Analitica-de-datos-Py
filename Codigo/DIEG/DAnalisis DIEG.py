@@ -1,33 +1,32 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
 
-df = pd.read_csv('Codigo/EstudiantesRendimiento.csv')
-df1 = pd.read_csv('Codigo/Paises.csv')
+# Cargar datos de DIEG PIONEROS desde el archivo CSV
+df_pioneros = pd.read_csv('Datos/DIEG/DIEG PIONEROS.csv')
 
+# Cargar datos de DIEGO Distinguidos desde el archivo CSV
+df_distinguidos = pd.read_csv('Datos/DIEG/DIEG Distinguidos.csv')
 
+# Remplazar los guiones '-' por 0 en ambos DataFrames
+df_pioneros.replace('-', 0, inplace=True)
+df_distinguidos.replace('-', 0, inplace=True)
 
+# Convertir las columnas numéricas a valores numéricos
+df_pioneros.iloc[:, 3:] = df_pioneros.iloc[:, 3:].apply(pd.to_numeric)
+df_distinguidos.iloc[:, 3:] = df_distinguidos.iloc[:, 3:].apply(pd.to_numeric)
 
-with_edc = len(df[df['parental level of education']!='some college'])
+# Calcular la media y la suma de estudiantes para programas pioneros
+df_pioneros['Media'] = df_pioneros.iloc[:, 3:].mean(axis=1)
+df_pioneros['Total Estudiantes'] = df_pioneros.iloc[:, 3:].sum(axis=1)
 
-print('Número de solicitantes con educación superior:',with_edc)
+# Calcular la media y la suma de estudiantes para programas distinguidos
+df_distinguidos['Media'] = df_distinguidos.iloc[:, 3:].mean(axis=1)
+df_distinguidos['Total Estudiantes'] = df_distinguidos.iloc[:, 3:].sum(axis=1)
 
-female = len(df[df['gender']=='female'])
-print('Número de Mujeres:',female)
-male = len(df[df['gender']=='male'])
-print('Número de Hombres:',male)
+# Crear un DataFrame para almacenar las sedes de pioneros y distinguidos
+df_sedes = pd.DataFrame()
+df_sedes['Sedes Pioneros'] = df_pioneros['SEDE']
+df_sedes['Sedes Distinguidos'] = df_distinguidos['SEDE']
 
-print('Número de alumnos pertenecientes al grupo A:',len(df[df['race/ethnicity']=='group A']))
-print('Número de alumnos pertenecientes al grupo B:',len(df[df['race/ethnicity']=='group B']))
-print('Número de alumnos pertenecientes al grupo C:',len(df[df['race/ethnicity']=='group C']))
-print('Número de alumnos pertenecientes al grupo D:',len(df[df['race/ethnicity']=='group D']))
-print('Número de alumnos pertenecientes al grupo E:',len(df[df['race/ethnicity']=='group E']))
-
-#--------------------------------------------------------------------------------------
-
-
-
-
-print('\n \nNúmero total de países:',len(df1['Country']))
-print('PIB promedio de todos los países:', int(df1['GDP ($ per capita)'].mean()) )
-
+# Mostrar el DataFrame con las sedes de pioneros y distinguidos
+print("Sedes de Programas Pioneros y Distinguidos en DIEG:")
+print(df_sedes)
