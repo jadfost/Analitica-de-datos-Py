@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Leer el archivo CSV
 df = pd.read_csv('Datos/DIEG/DIEG PIONEROS.csv')
