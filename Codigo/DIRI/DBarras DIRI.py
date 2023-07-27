@@ -1,30 +1,22 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
-# Leer el archivo CSV
-df = pd.read_csv('Datos/DIEG/DIEG PIONEROS.csv')
+# Cargamos los datos desde los archivos CSV en DataFrames
+df_estudiantes = pd.read_csv('Datos/DIRI/DIRI Consolidado mov. estud.csv')
+df_docentes = pd.read_csv('Datos/DIRI/DIRI Mov. Docente.csv')
+df_mov_estudiantil = pd.read_csv('Datos/DIRI/DIRI Mov.estudiantil.csv')
 
-# Crear una lista con los nombres de los programas académicos
-programas_academicos = ['PIME', 'PIAM', 'MSIG', 'MIAM']
+# Calculamos el total de movimientos (estudiantes y docentes) por ciudad
+total_movimientos_tunja = df_estudiantes['MOVILIDAD ESTUDIANTES SALIENTE TUNJA'].sum() + df_estudiantes['MOVILIDAD ESTUDIANTES ENTRATE TUNJA'].sum()
+total_movimientos_chiquinquira = df_estudiantes['MES - CHIQUINQUIRÁ'].sum()
+total_movimientos_sogamoso = df_estudiantes['MES - SOGAMOSO'].sum() + df_docentes['PS - Docente Nacional'].count()
 
-# Inicializar un diccionario para almacenar la cantidad de estudiantes pioneros por programa
-estudiantes_pioneros_por_programa = {}
+# Creamos el gráfico de barras
+ciudades = ['Tunja', 'Chiquinquirá', 'Sogamoso']
+total_movimientos = [total_movimientos_tunja, total_movimientos_chiquinquira, total_movimientos_sogamoso]
 
-# Calcular la cantidad de estudiantes pioneros por programa académico y almacenar en el diccionario
-for programa in programas_academicos:
-    df_programa = df[df['PROGRAMA ACADÉMICO'] == programa]
-    estudiantes_pioneros_por_programa[programa] = df_programa.iloc[:, 3:].sum().sum()
-
-# Configurar el gráfico de barras
-plt.bar(estudiantes_pioneros_por_programa.keys(), estudiantes_pioneros_por_programa.values(), color='skyblue')
-plt.xlabel('Programa Académico')
-plt.ylabel('Cantidad de Estudiantes Pioneros')
-plt.title('Cantidad de Estudiantes Pioneros por Programa Académico')
-plt.grid(axis='y')
-
-# Agregar leyenda
-plt.legend(['Estudiantes Pioneros'])
-
-# Mostrar el gráfico
+plt.bar(ciudades, total_movimientos, color=plt.cm.Paired.colors)
+plt.xlabel('Ciudad')
+plt.ylabel('Total de Movimientos')
+plt.title('Distribución de Movimientos Estudiantiles y Docentes por Ciudad')
 plt.show()
