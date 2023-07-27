@@ -1,28 +1,25 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
-# Cargamos los datos desde el archivo CSV en un DataFrame
-df = pd.read_csv('Datos/DIEG/DIEG Distinguidos.csv')
+# Cargamos los datos desde los archivos CSV en DataFrames
+df_estudiantes = pd.read_csv('Datos/DIRI/DIRI Consolidado mov. estud.csv')
+df_docentes = pd.read_csv('Datos/DIRI/DIRI Mov. Docente.csv')
+df_mov_estudiantil = pd.read_csv('Datos/DIRI/DIRI Mov.estudiantil.csv')
 
-# Reemplazamos los valores "-" por NaN (Not a Number) de NumPy
-df.replace('-', np.nan, inplace=True)
+# Calculamos el total de movimientos estudiantiles por año y período
+total_estudiantes_por_periodo = df_estudiantes.groupby('Año y período')['TOTAL'].sum()
 
-# Creamos una lista con los años para utilizar en las visualizaciones
-years = ['2014', '2015', '2016-10', '2016-20', '2018', '2019', '2020-10', '2020-20', '2021-10', '2021-20']
+# Calculamos el total de movimientos docentes por año y período
+total_docentes_por_periodo = df_docentes['PE  Periodo movilidad'].value_counts()
 
-# Eliminamos filas que contengan valores NaN en las columnas de años
-df.dropna(subset=years, inplace=True)
+# Calculamos el total de movimientos estudiantiles y docentes por año y período
+total_movimientos_por_periodo = total_estudiantes_por_periodo.add(total_docentes_por_periodo, fill_value=0)
 
-# Graficamos la evolución de cada programa distinguido en DIEG
-programas_distinguidos = df['PROGRAMA'].unique()
-plt.figure(figsize=(10, 6))
+# Creamos el gráfico circular
+plt.figure(figsize=(8, 8))
+plt.pie(total_movimientos_por_periodo, labels=total_movimientos_por_periodo.index, autopct='%1.1f%%', startangle=90, colors=plt.cm.Paired.colors)
+plt.title('Distribución de Movimientos Estudiantiles y Docentes por Período')
+plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
-for programa in programas_distinguidos:
-    programa_data = df[df['PROGRAMA'] == programa]
-    distinciones = programa_data.iloc[:, 3:].values.astype(float).tolist()[0]
-    plt.pie(distinciones, labels=years, autopct='%1.1f%%', startangle=90)
-    plt.title(f'Evolución del programa distinguido {programa} en DIEG')
-    plt.axis('equal')  # Proporciona un aspecto de círculo en lugar de una elipse
-    plt.legend(years, title='Años', loc='upper left', bbox_to_anchor=(1, 0, 0.5, 1))  # Muestra la leyenda fuera del gráfico
-    plt.show()
+# Mostramos el gráfico
+plt.show()
