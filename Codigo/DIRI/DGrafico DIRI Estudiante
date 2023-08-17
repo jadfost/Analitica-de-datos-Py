@@ -1,0 +1,21 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Cargar los datos
+df_docentes = pd.read_csv('Datos/DIRI/DIRI Mov. Docente.csv')
+df_estudiantes = pd.read_csv('Datos/DIRI/DIRI Mov.estudiantil.csv')
+
+# Calcular la cantidad de docentes y estudiantes por convenio
+docentes_counts = df_docentes.groupby('POBLACION ENTRANTE - NOMBRE DEL CONVENIO')['PE - Docente Nacional'].count()
+estudiantes_counts = df_estudiantes.groupby('POBLACION ENTRANTE - NOMBRE DEL CONVENIO')['PE - Estudiantes Nacional'].count()
+
+# Combinar los DataFrames de docentes y estudiantes
+combined_counts = docentes_counts.add(estudiantes_counts, fill_value=0)
+top_convenios = combined_counts.nlargest(10)
+
+# Crear el gráfico circular
+plt.figure(figsize=(8, 8))
+plt.pie(top_convenios, labels=top_convenios.index, autopct='%1.1f%%', startangle=140, pctdistance=0.85)
+plt.axis('equal')
+plt.title('Convenios más Populares por Cantidad de Docentes y Estudiantes')
+plt.show()

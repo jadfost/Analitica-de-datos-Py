@@ -1,32 +1,21 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Cargamos los datos desde el archivo CSV en un DataFrame
-df_docentes = pd.read_csv('Datos/DIRI/DIRI Mov. Docente.csv')
+# Cargar los datos
+df_estudiantes = pd.read_csv('Datos/DIRI/DIRI Mov.estudiantil.csv')
 
-# Calcular la cantidad de movilidades para cada periodo
-movilidades_pe = df_docentes['PE  Periodo movilidad'].sum()
-movilidades_ps = df_docentes['PS Periodo movilidad'].sum()
+# Calcular la cantidad de estudiantes nacionales e internacionales por convenio
+nacionalidad_counts = df_estudiantes.groupby('POBLACION ENTRANTE - NOMBRE DEL CONVENIO')['PE - Estudiantes Nacional'].value_counts().unstack().fillna(0)
 
-# Etiquetas y datos para el gráfico
-periodos = ['PE', 'PS']
-movilidades = [movilidades_pe, movilidades_ps]
-
-# Colores para el gráfico
-colores = ['#F78F1E', '#1E90FF']
-
-# Crear el gráfico circular
-plt.figure(figsize=(8, 8))
-plt.pie(movilidades, labels=periodos, colors=colores, autopct='%1.1f%%', startangle=140)
-
-# Agregar título y leyenda
-plt.title('Distribución del Número de Movilidades en Periodos PE y PS')
-plt.legend(periodos, title='Periodos', loc='upper left', bbox_to_anchor=(0.85, 0.95))
-
-# Calcular y agregar el total de movilidades en el centro del gráfico
-total_movilidades = sum(movilidades)
-plt.text(0, 0, f'Total de Movilidades:\n{total_movilidades}', ha='center', va='center', fontsize=12)
-
-# Mostrar el gráfico
-plt.axis('equal')
-plt.show()
+# Crear un gráfico circular por cada convenio
+for convenio, row in nacionalidad_counts.iterrows():
+    fig, ax = plt.subplots()
+    wedges, texts, autotexts = ax.pie(row, autopct='%1.1f%%', startangle=90, textprops=dict(color="w"))
+    ax.legend(wedges, row.index, title="Nacionalidad", loc="center left", bbox_to_anchor=(1, 0, 0.5, 1))
+    ax.set_title(f'Distribución de Nacionalidad de Estudiantes en {convenio}')
+    
+    # Ajustar la etiqueta de cada porción para evitar superposición
+    for text in texts:
+        text.set_rotation(30)
+    
+    plt.show()
