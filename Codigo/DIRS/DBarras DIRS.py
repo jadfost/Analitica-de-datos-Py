@@ -2,29 +2,28 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Leer el archivo CSV
-df = pd.read_csv('Datos/DIEG/DIEG PIONEROS.csv')
+# Archivos CSV
+df = pd.read_csv('Datos/DIRS/DIRS 1.csv')
+df1 = pd.read_csv('Datos/DIRS/DIRS 2.csv')
+df2 = pd.read_csv('Datos/DIRS/DIRS 3.csv')
+df3 = pd.read_csv('Datos/DIRS/DIRS 4.csv')
 
-# Crear una lista con los nombres de los programas académicos
-programas_academicos = ['PIME', 'PIAM', 'MSIG', 'MIAM']
+# Concatenar los datos en un solo DataFrame
+df = pd.concat([df, df1, df2, df3])
 
-# Inicializar un diccionario para almacenar la cantidad de estudiantes pioneros por programa
-estudiantes_pioneros_por_programa = {}
+# Calcular la distribución porcentual de los estados de proyecto
+estado_counts = df['ESTADO DEL PROYECTO'].value_counts()
+total_projects = estado_counts.sum()
+porcentajes = (estado_counts / total_projects) * 100
 
-# Calcular la cantidad de estudiantes pioneros por programa académico y almacenar en el diccionario
-for programa in programas_academicos:
-    df_programa = df[df['PROGRAMA ACADÉMICO'] == programa]
-    estudiantes_pioneros_por_programa[programa] = df_programa.iloc[:, 3:].sum().sum()
+# Configuración del gráfico
+labels = estado_counts.index
+colors = ['blue', 'green', 'orange', 'red']
+explode = (0.1, 0, 0, 0)  # Resaltar el primer segmento
 
-# Configurar el gráfico de barras
-plt.bar(estudiantes_pioneros_por_programa.keys(), estudiantes_pioneros_por_programa.values(), color='skyblue')
-plt.xlabel('Programa Académico')
-plt.ylabel('Cantidad de Estudiantes Pioneros')
-plt.title('Cantidad de Estudiantes Pioneros por Programa Académico')
-plt.grid(axis='y')
-
-# Agregar leyenda
-plt.legend(['Estudiantes Pioneros'])
-
-# Mostrar el gráfico
+# Crear el gráfico circular
+plt.figure(figsize=(8, 6))
+plt.pie(porcentajes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
+plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+plt.title('Distribución porcentual de Estados de Proyectos de Proyección Social')
 plt.show()
