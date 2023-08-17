@@ -1,30 +1,24 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 
-# Leer el archivo CSV
-df = pd.read_csv('Datos/DIEG/DIEG PIONEROS.csv')
+# Leer el archivo CSV con los datos de OCME
+df = pd.read_csv('Datos/OCME/OCME 10-18.csv')  # Reemplaza 'ruta_del_archivo.csv' con la ubicación real del archivo
 
-# Crear una lista con los nombres de los programas académicos
-programas_academicos = ['PIME', 'PIAM', 'MSIG', 'MIAM']
+# Convertir la columna a números
+df['NÚMERO APROX. DE PERSONAS INFORMADAS'] = pd.to_numeric(df['NÚMERO APROX. DE PERSONAS INFORMADAS'], errors='coerce')
 
-# Inicializar un diccionario para almacenar la cantidad de estudiantes pioneros por programa
-estudiantes_pioneros_por_programa = {}
+# Filtrar las filas con valores numéricos en la columna
+df = df.dropna(subset=['NÚMERO APROX. DE PERSONAS INFORMADAS'])
 
-# Calcular la cantidad de estudiantes pioneros por programa académico y almacenar en el diccionario
-for programa in programas_academicos:
-    df_programa = df[df['PROGRAMA ACADÉMICO'] == programa]
-    estudiantes_pioneros_por_programa[programa] = df_programa.iloc[:, 3:].sum().sum()
+# Agrupar datos por año y sumar el número de personas informadas
+informados_por_año = df.groupby('AÑO/PERIODO')['NÚMERO APROX. DE PERSONAS INFORMADAS'].sum()
 
-# Configurar el gráfico de barras
-plt.bar(estudiantes_pioneros_por_programa.keys(), estudiantes_pioneros_por_programa.values(), color='skyblue')
-plt.xlabel('Programa Académico')
-plt.ylabel('Cantidad de Estudiantes Pioneros')
-plt.title('Cantidad de Estudiantes Pioneros por Programa Académico')
-plt.grid(axis='y')
-
-# Agregar leyenda
-plt.legend(['Estudiantes Pioneros'])
-
-# Mostrar el gráfico
+# Configurar el gráfico
+plt.figure(figsize=(10, 6))
+informados_por_año.plot(kind='bar')
+plt.xlabel('Año')
+plt.ylabel('Número de Personas Informadas')
+plt.title('Número de Personas Informadas por Año')
+plt.xticks(rotation=45)
+plt.tight_layout()
 plt.show()
