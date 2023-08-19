@@ -14,6 +14,7 @@ app = dash.Dash(__name__)
 # Definir el diseño de la aplicación
 app.layout = html.Div([
     html.H1('Visualización de Datos DIRI'),
+    html.P('Selecciona una tabla:'),
     dcc.Dropdown(
         id='tabla-dropdown',
         options=[
@@ -23,14 +24,29 @@ app.layout = html.Div([
         value='docentes',  # Valor inicial
         multi=False
     ),
+    html.P('Selecciona un variable de analisis:'),
     dcc.Dropdown(
         id='campo-dropdown',
-        options=[{'label': columna, 'value': columna} for columna in df_docentes.columns],
-        value='PE  Periodo movilidad',  # Valor inicial
         multi=False
     ),
     dcc.Graph(id='grafico-barras')
 ])
+
+# Crear una función para actualizar las opciones del menú desplegable de campos
+@app.callback(
+    Output('campo-dropdown', 'options'),
+    Input('tabla-dropdown', 'value')
+)
+def actualizar_campos_disponibles(tabla_seleccionada):
+    if tabla_seleccionada == 'docentes':
+        columnas_disponibles = df_docentes.columns
+    elif tabla_seleccionada == 'estudiantes':
+        columnas_disponibles = df_estudiantes.columns
+    else:
+        columnas_disponibles = []
+
+    opciones = [{'label': columna, 'value': columna} for columna in columnas_disponibles]
+    return opciones
 
 # Crear una función para actualizar el gráfico de barras
 @app.callback(
@@ -48,6 +64,10 @@ def actualizar_grafico(tabla_seleccionada, campo_seleccionado):
     else:
         data = pd.DataFrame()
         titulo = ''
+
+    # Filtrar filas con campos vacíos en la columna seleccionada
+    if not data.empty and campo_seleccionado in data.columns:
+        data = data.dropna(subset=[campo_seleccionado])
 
     if not data.empty and campo_seleccionado in data.columns:
         fig = px.bar(data, x=campo_seleccionado, title=f'{titulo} - {campo_seleccionado}')
