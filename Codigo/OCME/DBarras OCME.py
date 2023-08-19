@@ -1,24 +1,42 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.express as px
+
 
 # Leer el archivo CSV con los datos de OCME
-df = pd.read_csv('Datos/OCME/OCME 10-18.csv')  # Reemplaza 'ruta_del_archivo.csv' con la ubicación real del archivo
+data_ocme = pd.read_csv('Datos/OCME/OCME 10-18.csv')
 
-# Convertir la columna a números
-df['NÚMERO APROX. DE PERSONAS INFORMADAS'] = pd.to_numeric(df['NÚMERO APROX. DE PERSONAS INFORMADAS'], errors='coerce')
+# Crear una aplicación Dash
+app = dash.Dash(__name__)
 
-# Filtrar las filas con valores numéricos en la columna
-df = df.dropna(subset=['NÚMERO APROX. DE PERSONAS INFORMADAS'])
+# Definir el diseño de la aplicación
+app.layout = html.Div([
+    html.H1('Visualización de Datos OCME'),
+    html.P("Selecciona una variable de analisis:"),
+    dcc.Dropdown(
+        id='campo-dropdown',
+        options=[{'label': columna, 'value': columna} for columna in data_ocme.columns],
+        value='AÑO/PERIODO',  # Cambiado a 'AÑO/PERIODO'
+        multi=False
+    ),
+    dcc.Graph(id='grafico-barras')
+])
 
-# Agrupar datos por año y sumar el número de personas informadas
-informados_por_año = df.groupby('AÑO/PERIODO')['NÚMERO APROX. DE PERSONAS INFORMADAS'].sum()
+# Crear una función para actualizar el gráfico de barras
+@app.callback(
+    Output('grafico-barras', 'figure'),
+    Input('campo-dropdown', 'value')
+)
+def actualizar_grafico(campo_seleccionado):
+    if campo_seleccionado is not None:
+        fig = px.bar(data_ocme, x=campo_seleccionado, title=f'Gráfico de barras para {campo_seleccionado}')
+    else:
+        fig = px.bar()  # Gráfico vacío si no se ha seleccionado un campo
 
-# Configurar el gráfico
-plt.figure(figsize=(10, 6))
-informados_por_año.plot(kind='bar')
-plt.xlabel('Año')
-plt.ylabel('Número de Personas Informadas')
-plt.title('Número de Personas Informadas por Año')
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
+    return fig
+
+# Iniciar la aplicación
+if __name__ == '__main__':
+    app.run_server(debug=True)

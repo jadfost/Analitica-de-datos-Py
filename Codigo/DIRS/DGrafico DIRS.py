@@ -19,6 +19,7 @@ app = dash.Dash(__name__)
 # Definir el diseño de la aplicación
 app.layout = html.Div([
     html.H1('Visualización de Datos DIRS'),
+    html.P("Selecciona una variable combinada:"),
     dcc.Dropdown(
         id='campo-dropdown',
         options=[{'label': columna, 'value': columna} for columna in data_combinada.columns],

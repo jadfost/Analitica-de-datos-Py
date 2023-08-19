@@ -16,6 +16,7 @@ app = dash.Dash(__name__)
 # Definir el diseño de la aplicación
 app.layout = html.Div([
     html.H1('Visualización de Datos DIRS'),
+    html.P("Selecciona una tabla de DIRS"),
     dcc.Dropdown(
         id='tabla-dropdown',
         options=[
@@ -27,6 +28,7 @@ app.layout = html.Div([
         value='DIRS 1',  # Valor inicial: Tabla 1
         multi=False
     ),
+    html.P("Selecciona una variable de Analisis:"),
     dcc.Dropdown(
         id='campo-dropdown',
         multi=False
