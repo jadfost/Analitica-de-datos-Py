@@ -1,28 +1,74 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.express as px
 
-# Cargamos los datos desde el archivo CSV en un DataFrame
-df = pd.read_csv('Datos/DIEG/DIEG Distinguidos.csv')
+# Cargar los datos de DIEG PIONEROS y DIEG DISTINGUIDOS
+data_dieg_pioneros = pd.read_csv('Datos/DIEG/DIEG PIONEROS.csv')
+data_dieg_distinguidos = pd.read_csv('Datos/DIEG/DIEG Distinguidos.csv')
 
-# Reemplazamos los valores "-" por NaN (Not a Number) de NumPy
-df.replace('-', np.nan, inplace=True)
 
-# Creamos una lista con los años para utilizar en las visualizaciones
-years = ['2014', '2015', '2016-10', '2016-20', '2018', '2019', '2020-10', '2020-20', '2021-10', '2021-20']
+# Agregar una columna 'Origen' a cada DataFrame para identificar el origen de los datos
+data_dieg_pioneros['Origen'] = 'Pioneros'
+data_dieg_distinguidos['Origen'] = 'Distinguidos'
 
-# Eliminamos filas que contengan valores NaN en las columnas de años
-df.dropna(subset=years, inplace=True)
+# Combinar los datos de ambas tablas
+data_combinada = pd.concat([data_dieg_pioneros, data_dieg_distinguidos])
 
-# Graficamos la evolución de cada programa distinguido en DIEG
-programas_distinguidos = df['PROGRAMA'].unique()
-plt.figure(figsize=(10, 6))
+# Crear una aplicación Dash
+app = dash.Dash(__name__)
 
-for programa in programas_distinguidos:
-    programa_data = df[df['PROGRAMA'] == programa]
-    distinciones = programa_data.iloc[:, 3:].values.astype(float).tolist()[0]
-    plt.pie(distinciones, labels=years, autopct='%1.1f%%', startangle=90)
-    plt.title(f'Evolución del programa distinguido {programa} en DIEG')
-    plt.axis('equal')  # Proporciona un aspecto de círculo en lugar de una elipse
-    plt.legend(years, title='Años', loc='upper left', bbox_to_anchor=(1, 0, 0.5, 1))  # Muestra la leyenda fuera del gráfico
-    plt.show()
+# Definir el diseño de la aplicación
+app.layout = html.Div([
+    html.P("Selecciona un programa académico:"),
+    dcc.Dropdown(
+        id='programa-dropdown',
+        options=[{'label': programa, 'value': programa} for programa in data_combinada['PROGRAMA ACADÉMICO'].unique()],
+        value='PIME',  # Valor inicial
+        multi=False
+    ),
+    html.P("Selecciona el campo a comparar:"),
+    dcc.Dropdown(
+        id='columna-dropdown',
+        multi=False
+    ),
+    dcc.Graph(id='grafico-circular')
+])
+
+# Crear una función para actualizar las opciones del filtro de columnas
+@app.callback(
+    Output('columna-dropdown', 'options'),
+    Input('programa-dropdown', 'value')
+)
+def actualizar_columnas(programa_seleccionado):
+    if programa_seleccionado is not None:
+        columnas = data_combinada[data_combinada['PROGRAMA ACADÉMICO'] == programa_seleccionado].columns
+    else:
+        columnas = []
+
+    opciones = [{'label': columna, 'value': columna} for columna in columnas]
+    return opciones
+
+# Crear una función para actualizar el gráfico circular
+@app.callback(
+    Output('grafico-circular', 'figure'),
+    Input('columna-dropdown', 'value'),
+    Input('programa-dropdown', 'value')
+)
+def actualizar_grafico(columna_seleccionada, programa_seleccionado):
+    if programa_seleccionado is not None:
+        data_filtrada = data_combinada[data_combinada['PROGRAMA ACADÉMICO'] == programa_seleccionado]
+
+        if columna_seleccionada is not None:
+            fig = px.pie(data_filtrada, names=columna_seleccionada, title=f'Distribución de {columna_seleccionada}')
+        else:
+            fig = px.pie()  # Gráfico vacío si no se ha seleccionado una columna
+    else:
+        fig = px.pie()  # Gráfico vacío si no se ha seleccionado un programa académico
+
+    return fig
+
+# Iniciar la aplicación
+if __name__ == '__main__':
+    app.run_server(debug=True)

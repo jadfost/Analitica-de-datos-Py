@@ -15,18 +15,21 @@ app = dash.Dash(__name__)
 
 # Definir el diseño de la aplicación
 app.layout = html.Div([
+    html.P("Selecciona un programa académico:"),
     dcc.Dropdown(
         id='programa-dropdown',  # Cambiar el ID del filtro
         options=[{'label': programa, 'value': programa} for programa in data_dieg_pioneros['PROGRAMA ACADÉMICO'].unique()],  # Cambiar la columna de opciones
         value='PIME',  # Valor inicial
         multi=False
     ),
+    html.P("Selecciona una Sede:"),
     dcc.Dropdown(
         id='sede-dropdown',
         options=[{'label': sede, 'value': sede} for sede in data_dieg_pioneros['SEDE'].unique()],
         value='Tunja',
         multi=False
     ),
+    html.P("Selecciona un Año:"),
     dcc.Dropdown(
         id='year-dropdown',
         options=[{'label': year, 'value': year} for year in data_dieg_pioneros.columns[3:]],

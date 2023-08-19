@@ -13,6 +13,7 @@ app = dash.Dash(__name__)
 
 # Definir el diseño de la aplicación
 app.layout = html.Div([
+    html.P("Selecciona una tabla de DIEG:"),
     dcc.Dropdown(
         id='tabla-dropdown',
         options=[
@@ -22,12 +23,14 @@ app.layout = html.Div([
         value='pioneros',  # Valor inicial
         multi=False
     ),
+    html.P("Selecciona un programa académico:"),
     dcc.Dropdown(
         id='programa-dropdown',
         options=[{'label': programa, 'value': programa} for programa in data_dieg_pioneros['PROGRAMA ACADÉMICO'].unique()],
         value='PIME',  # Valor inicial
         multi=False
     ),
+    html.P("Selecciona una variable de Analisis:"),
     dcc.Dropdown(
         id='columna-dropdown',
         multi=False
