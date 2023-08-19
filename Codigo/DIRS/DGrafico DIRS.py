@@ -1,29 +1,42 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.express as px
 
-# Archivos CSV
-df = pd.read_csv('Datos/DIRS/DIRS 1.csv')
-df1 = pd.read_csv('Datos/DIRS/DIRS 2.csv')
-df2 = pd.read_csv('Datos/DIRS/DIRS 3.csv')
-df3 = pd.read_csv('Datos/DIRS/DIRS 4.csv')
+# Cargar los datos desde los archivos CSV
+df1 = pd.read_csv('Datos/DIRS/DIRS 1.csv')
+df2 = pd.read_csv('Datos/DIRS/DIRS 2.csv')
+df3 = pd.read_csv('Datos/DIRS/DIRS 3.csv')
+df4 = pd.read_csv('Datos/DIRS/DIRS 4.csv')
 
-# Concatenar los datos en un solo DataFrame
-df = pd.concat([df, df1, df2, df3])
+# Combinar los datos en un solo DataFrame
+data_combinada = pd.concat([df1, df2, df3, df4], ignore_index=True)
 
-# Calcular la distribución porcentual de los estados de proyecto
-estado_counts = df['ESTADO DEL PROYECTO'].value_counts()
-total_projects = estado_counts.sum()
-porcentajes = (estado_counts / total_projects) * 100
+# Crear una aplicación Dash
+app = dash.Dash(__name__)
 
-# Configuración del gráfico
-labels = estado_counts.index
-colors = ['blue', 'green', 'orange', 'red']
-explode = (0.1, 0, 0, 0)  # Resaltar el primer segmento
+# Definir el diseño de la aplicación
+app.layout = html.Div([
+    html.H1('Visualización de Datos DIRS'),
+    dcc.Dropdown(
+        id='campo-dropdown',
+        options=[{'label': columna, 'value': columna} for columna in data_combinada.columns],
+        value=data_combinada.columns[0],  # Valor inicial: primera columna
+        multi=False
+    ),
+    dcc.Graph(id='grafico-circular')
+])
 
-# Crear el gráfico circular
-plt.figure(figsize=(8, 6))
-plt.pie(porcentajes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
-plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
-plt.title('Distribución porcentual de Estados de Proyectos de Proyección Social')
-plt.show()
+# Crear una función para actualizar el gráfico circular
+@app.callback(
+    Output('grafico-circular', 'figure'),
+    Input('campo-dropdown', 'value')
+)
+def actualizar_grafico(campo_seleccionado):
+    fig = px.pie(data_combinada, names=campo_seleccionado, title=f'Distribución de {campo_seleccionado}')
+    return fig
+
+# Iniciar la aplicación
+if __name__ == '__main__':
+    app.run_server(debug=True)

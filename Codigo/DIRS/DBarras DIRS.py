@@ -1,5 +1,8 @@
 import pandas as pd
-import matplotlib.pyplot as plt
+import dash
+from dash import dcc, html
+from dash.dependencies import Input, Output
+import plotly.express as px
 
 # Cargar los datos desde los archivos CSV
 df1 = pd.read_csv('Datos/DIRS/DIRS 1.csv')
@@ -7,21 +10,70 @@ df2 = pd.read_csv('Datos/DIRS/DIRS 2.csv')
 df3 = pd.read_csv('Datos/DIRS/DIRS 3.csv')
 df4 = pd.read_csv('Datos/DIRS/DIRS 4.csv')
 
-# Concatenar los datos en un solo DataFrame
-df = pd.concat([df1, df2, df3, df4])
+# Crear una aplicación Dash
+app = dash.Dash(__name__)
 
-# Filtrar las actividades relacionadas con la atención primaria en salud y promoción de la salud
-df_salud = df[(df['PROGRAMA O DEPENDENCIA'] == 'PMED') | (df['PROGRAMA O DEPENDENCIA'] == 'PMED')]
+# Definir el diseño de la aplicación
+app.layout = html.Div([
+    html.H1('Visualización de Datos DIRS'),
+    dcc.Dropdown(
+        id='tabla-dropdown',
+        options=[
+            {'label': 'DIRS 1', 'value': 'DIRS 1'},
+            {'label': 'DIRS 2', 'value': 'DIRS 2'},
+            {'label': 'DIRS 3', 'value': 'DIRS 3'},
+            {'label': 'DIRS 4', 'value': 'DIRS 4'},
+        ],
+        value='DIRS 1',  # Valor inicial: Tabla 1
+        multi=False
+    ),
+    dcc.Dropdown(
+        id='campo-dropdown',
+        multi=False
+    ),
+    dcc.Graph(id='grafico-barras')
+])
 
-# Agrupar por año y contar la cantidad de actividades
-actividades_por_año = df_salud.groupby('AÑO DE RELACIÓN')['NOMBRE DE LA ACTIVIDAD'].count()
+# Crear una función para actualizar las opciones del filtro de columnas
+@app.callback(
+    Output('campo-dropdown', 'options'),
+    Input('tabla-dropdown', 'value')
+)
+def actualizar_columnas(tabla_seleccionada):
+    df_seleccionado = df1  # Por defecto, seleccionar la tabla 1
+    if tabla_seleccionada == 'DIRS 2':
+        df_seleccionado = df2
+    elif tabla_seleccionada == 'DIRS 3':
+        df_seleccionado = df3
+    elif tabla_seleccionada == 'DIRS 4':
+        df_seleccionado = df4
+    columnas = df_seleccionado.columns
 
-# Configuración del gráfico
-plt.figure(figsize=(10, 6))
-actividades_por_año.plot(kind='bar', color='blue')
-plt.xlabel('Año')
-plt.ylabel('Cantidad de Actividades')
-plt.title('Cantidad de Actividades de Atención Primaria en Salud y Promoción de la Salud por Año')
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.show()
+    opciones = [{'label': columna, 'value': columna} for columna in columnas]
+    return opciones
+
+# Crear una función para actualizar el gráfico de barras
+@app.callback(
+    Output('grafico-barras', 'figure'),
+    Input('tabla-dropdown', 'value'),
+    Input('campo-dropdown', 'value')
+)
+def actualizar_grafico(tabla_seleccionada, campo_seleccionado):
+    df_seleccionado = df1  # Por defecto, seleccionar la tabla 1
+    if tabla_seleccionada == 'DIRS 2':
+        df_seleccionado = df2
+    elif tabla_seleccionada == 'DIRS 3':
+        df_seleccionado = df3
+    elif tabla_seleccionada == 'DIRS 4':
+        df_seleccionado = df4
+
+    if campo_seleccionado is not None:
+        fig = px.bar(df_seleccionado, x=campo_seleccionado, title=f'Distribución de {campo_seleccionado}')
+    else:
+        fig = px.bar()  # Gráfico vacío si no se ha seleccionado una columna
+
+    return fig
+
+# Iniciar la aplicación
+if __name__ == '__main__':
+    app.run_server(debug=True)
