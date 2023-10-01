@@ -10,34 +10,48 @@ data_dieg_encuentros = pd.read_csv('Datos/DIEG/DIEG Encuentros.csv')
 # Crear una aplicación Dash
 app = dash.Dash(__name__)
 
+# Estilo CSS
+app.css.append_css({'external_url': 'https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css'})
+
 # Definir el diseño de la aplicación
 app.layout = html.Div([
-    # Título de la aplicación
-    html.H1("Visualización de Datos para DIEG Encuentros"),
+    # Barra de navegación
+    html.Nav([
+        html.Div([
+            html.H1("Visualización de Datos para DIEG Encuentros", className="navbar-brand"),
+        ], className="container"),
+    ], className="navbar navbar-dark bg-primary"),
 
-    # Dropdown para seleccionar el programa académico de DIEG Encuentros
+    # Contenedor principal
     html.Div([
-        html.H2("Selecciona un programa académico para DIEG Encuentros:"),
-        dcc.Dropdown(
-            id='programa-dropdown-encuentros',
-            options=[
-                {'label': programa, 'value': programa} for programa in data_dieg_encuentros['FACULTAD'].unique() if pd.notna(programa)
-            ],
-            value=data_dieg_encuentros['FACULTAD'].iloc[0]
-        )
-    ], style={'width': '48%', 'display': 'inline-block'}),
+        # Fila 1
+        html.Div([
+            # Columna 1 - Selector de programa académico
+            html.Div([
+                html.Label("Selecciona un programa académico para DIEG Encuentros:"),
+                dcc.Dropdown(
+                    id='programa-dropdown-encuentros',
+                    options=[
+                        {'label': programa, 'value': programa} for programa in data_dieg_encuentros['FACULTAD'].unique() if pd.notna(programa)
+                    ],
+                    value=data_dieg_encuentros['FACULTAD'].iloc[0]
+                )
+            ], className="col-md-4"),
+            
+            # Columna 2 - Gráfico circular
+            html.Div([
+                dcc.Graph(id='pie-chart-encuentros'),
+            ], className="col-md-8"),
+        ], className="row"),
 
-    # Gráfico circular para DIEG Encuentros
-    html.Div([
-        html.H2("Porcentaje de Participación en DIEG Encuentros por Año"),
-        dcc.Graph(id='pie-chart-encuentros')
-    ], style={'width': '48%', 'display': 'inline-block'}),
-
-    # Texto explicativo
-    html.Div([
-        html.H2("Explicación del Gráfico"),
-        html.P("Este gráfico circular muestra el número de participantes en el encuentro por año para el programa académico seleccionado. Cada porción del gráfico representa un año, y el tamaño de cada porción es proporcional al número de participantes en ese año."),
-    ], style={'width': '48%', 'display': 'inline-block'}),
+        # Fila 2 - Texto explicativo
+        html.Div([
+            html.Div([
+                html.H2("Explicación del Gráfico"),
+                html.P("Este gráfico circular muestra el número de participantes en el encuentro por año para el programa académico seleccionado. Cada porción del gráfico representa un año, y el tamaño de cada porción es proporcional al número de participantes en ese año."),
+            ], className="col-md-12"),
+        ], className="row"),
+    ], className="container"),
 ])
 
 # Función para crear el gráfico circular para DIEG Encuentros
