@@ -1,72 +1,58 @@
 import pandas as pd
 import dash
 from dash import dcc, html
+import plotly.graph_objs as go
 from dash.dependencies import Input, Output
-import plotly.express as px
 
-# Cargar los datos de DIEG PIONEROS y DIEG DISTINGUIDOS
-data_dieg_pioneros = pd.read_csv('Datos/DIEG/DIEG PIONEROS.csv')
-data_dieg_distinguidos = pd.read_csv('Datos/DIEG/DIEG Distinguidos.csv')
-
-
-# Agregar una columna 'Origen' a cada DataFrame para identificar el origen de los datos
-data_dieg_pioneros['Origen'] = 'Pioneros'
-data_dieg_distinguidos['Origen'] = 'Distinguidos'
-
-# Combinar los datos de ambas tablas
-data_combinada = pd.concat([data_dieg_pioneros, data_dieg_distinguidos])
+# Cargar los datos de DIEG Encuentros
+data_dieg_encuentros = pd.read_csv('Datos/DIEG/DIEG Encuentros.csv')
 
 # Crear una aplicación Dash
 app = dash.Dash(__name__)
 
 # Definir el diseño de la aplicación
 app.layout = html.Div([
-    html.P("Selecciona un programa académico:"),
-    dcc.Dropdown(
-        id='programa-dropdown',
-        options=[{'label': programa, 'value': programa} for programa in data_combinada['PROGRAMA ACADÉMICO'].unique()],
-        value='PIME',  # Valor inicial
-        multi=False
-    ),
-    html.P("Selecciona el campo a comparar:"),
-    dcc.Dropdown(
-        id='columna-dropdown',
-        multi=False
-    ),
-    dcc.Graph(id='grafico-circular')
+    # Título de la aplicación
+    html.H1("Visualización de Datos para DIEG Encuentros"),
+
+    # Dropdown para seleccionar el programa académico de DIEG Encuentros
+    html.Div([
+        html.H2("Selecciona un programa académico para DIEG Encuentros:"),
+        dcc.Dropdown(
+            id='programa-dropdown-encuentros',
+            options=[
+                {'label': programa, 'value': programa} for programa in data_dieg_encuentros['FACULTAD'].unique() if pd.notna(programa)
+            ],
+            value=data_dieg_encuentros['FACULTAD'].iloc[0]
+        )
+    ], style={'width': '48%', 'display': 'inline-block'}),
+
+    # Gráfico circular para DIEG Encuentros
+    html.Div([
+        html.H2("Porcentaje de Participación en DIEG Encuentros por Año"),
+        dcc.Graph(id='pie-chart-encuentros')
+    ], style={'width': '48%', 'display': 'inline-block'}),
+
+    # Texto explicativo
+    html.Div([
+        html.H2("Explicación del Gráfico"),
+        html.P("Este gráfico circular muestra el número de participantes en el encuentro por año para el programa académico seleccionado. Cada porción del gráfico representa un año, y el tamaño de cada porción es proporcional al número de participantes en ese año."),
+    ], style={'width': '48%', 'display': 'inline-block'}),
 ])
 
-# Crear una función para actualizar las opciones del filtro de columnas
+# Función para crear el gráfico circular para DIEG Encuentros
 @app.callback(
-    Output('columna-dropdown', 'options'),
-    Input('programa-dropdown', 'value')
+    Output('pie-chart-encuentros', 'figure'),
+    Input('programa-dropdown-encuentros', 'value')
 )
-def actualizar_columnas(programa_seleccionado):
-    if programa_seleccionado is not None:
-        columnas = data_combinada[data_combinada['PROGRAMA ACADÉMICO'] == programa_seleccionado].columns
-    else:
-        columnas = []
-
-    opciones = [{'label': columna, 'value': columna} for columna in columnas]
-    return opciones
-
-# Crear una función para actualizar el gráfico circular
-@app.callback(
-    Output('grafico-circular', 'figure'),
-    Input('columna-dropdown', 'value'),
-    Input('programa-dropdown', 'value')
-)
-def actualizar_grafico(columna_seleccionada, programa_seleccionado):
-    if programa_seleccionado is not None:
-        data_filtrada = data_combinada[data_combinada['PROGRAMA ACADÉMICO'] == programa_seleccionado]
-
-        if columna_seleccionada is not None:
-            fig = px.pie(data_filtrada, names=columna_seleccionada, title=f'Distribución de {columna_seleccionada}')
-        else:
-            fig = px.pie()  # Gráfico vacío si no se ha seleccionado una columna
-    else:
-        fig = px.pie()  # Gráfico vacío si no se ha seleccionado un programa académico
-
+def update_pie_chart_encuentros(selected_programa):
+    filtered_data = data_dieg_encuentros[data_dieg_encuentros['FACULTAD'] == selected_programa]
+    years = filtered_data['AÑO']
+    participants = filtered_data['NÚMERO DE PARTICIPANTES EN EL ENCUENTRO']
+    
+    fig = go.Figure(data=[go.Pie(labels=years, values=participants)])
+    fig.update_layout(title="Porcentaje de Participación en DIEG Encuentros por Año")
+    
     return fig
 
 # Iniciar la aplicación
