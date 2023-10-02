@@ -29,7 +29,8 @@ app.layout = html.Div([
         id='campo-dropdown',
         multi=False
     ),
-    dcc.Graph(id='grafico-circular')
+    dcc.Graph(id='grafico-circular'),
+    html.Div(id='grafico-explicacion')
 ])
 
 # Crear una función para actualizar las opciones del menú desplegable de campos
@@ -48,9 +49,10 @@ def actualizar_campos_disponibles(tabla_seleccionada):
     opciones = [{'label': columna, 'value': columna} for columna in columnas_disponibles]
     return opciones
 
-# Crear una función para actualizar el gráfico circular
+# Crear una función para actualizar el gráfico circular y la explicación
 @app.callback(
-    Output('grafico-circular', 'figure'),
+    [Output('grafico-circular', 'figure'),
+     Output('grafico-explicacion', 'children')],
     Input('tabla-dropdown', 'value'),
     Input('campo-dropdown', 'value')
 )
@@ -70,11 +72,40 @@ def actualizar_grafico(tabla_seleccionada, campo_seleccionado):
         data = data.dropna(subset=[campo_seleccionado])
 
     if not data.empty and campo_seleccionado in data.columns:
-        fig = px.pie(data, names=campo_seleccionado, title=f'{titulo} - {campo_seleccionado}')
+        # Calcular el conteo de valores y etiquetas
+        conteo_valores = data[campo_seleccionado].value_counts()
+        etiquetas = conteo_valores.index.tolist()
+        valores = conteo_valores.tolist()
+
+        # Limitar la cantidad de categorías principales mostradas
+        max_categorias = 10
+        if len(etiquetas) > max_categorias:
+            etiquetas = etiquetas[:max_categorias]
+            valores = valores[:max_categorias]
+            etiquetas.append('Otros')
+            valores.append(sum(conteo_valores[max_categorias:]))
+
+        # Crear un gráfico circular con las categorías limitadas
+        fig = px.pie(
+            names=etiquetas,
+            values=valores,
+            title=f'{titulo} - {campo_seleccionado}',
+            hole=0.3
+        )
+        fig.update_traces(textinfo='percent+label', selector=dict(type='pie'))
+
+        # Crear la explicación
+        explicacion = html.Div([
+            html.H2(f'Explicación del Gráfico - {campo_seleccionado}'),
+            html.P(f'Este gráfico circular muestra la distribución de {campo_seleccionado} en el conjunto de datos de {titulo}. '
+                   f'Muestra las principales categorías y el porcentaje de cada categoría con respecto al total.')
+        ])
+
     else:
         fig = px.pie()  # Gráfico circular vacío si no se ha seleccionado una tabla o campo válido
+        explicacion = ''
 
-    return fig
+    return fig, explicacion
 
 # Iniciar la aplicación
 if __name__ == '__main__':

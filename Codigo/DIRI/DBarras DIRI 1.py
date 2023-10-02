@@ -14,6 +14,15 @@ app = dash.Dash(__name__)
 # Definir el diseño de la aplicación
 app.layout = html.Div([
     html.H1('Visualización de Datos DIRI'),
+    
+    # Descripción de las tablas y su importancia
+    html.Div([
+        html.H2('Tabla de Docentes'),
+        html.P('Esta tabla contiene información sobre movilidad de docentes, incluyendo datos sobre docentes nacionales e internacionales que participaron en programas de movilidad.'),
+        html.H2('Tabla de Estudiantes'),
+        html.P('Esta tabla contiene información sobre movilidad de estudiantes, incluyendo datos sobre estudiantes nacionales e internacionales que participaron en programas de movilidad, tanto en pregrado como en postgrado.')
+    ], style={'margin-bottom': '20px'}),
+    
     html.P('Selecciona una tabla:'),
     dcc.Dropdown(
         id='tabla-dropdown',
@@ -24,7 +33,7 @@ app.layout = html.Div([
         value='docentes',  # Valor inicial
         multi=False
     ),
-    html.P('Selecciona un variable de analisis:'),
+    html.P('Selecciona una variable de análisis:'),
     dcc.Dropdown(
         id='campo-dropdown',
         multi=False
