@@ -16,19 +16,19 @@ app = dash.Dash(__name__)
 # Definir el diseño de la aplicación
 app.layout = html.Div([
     html.H1('Visualización de Datos DIRS'),
-    html.P("Selecciona una tabla de DIRS"),
+    html.P("Selecciona una tabla de DIRS para visualizar datos relevantes."),
     dcc.Dropdown(
         id='tabla-dropdown',
         options=[
-            {'label': 'DIRS 1', 'value': 'DIRS 1'},
-            {'label': 'DIRS 2', 'value': 'DIRS 2'},
-            {'label': 'DIRS 3', 'value': 'DIRS 3'},
-            {'label': 'DIRS 4', 'value': 'DIRS 4'},
+            {'label': 'DIRS 1 - Proyectos de Proyección Social', 'value': 'DIRS 1'},
+            {'label': 'DIRS 2 - Alternativas de Grado', 'value': 'DIRS 2'},
+            {'label': 'DIRS 3 - Prácticas y Comunidad', 'value': 'DIRS 3'},
+            {'label': 'DIRS 4 - Actividades y Comunidad', 'value': 'DIRS 4'},
         ],
         value='DIRS 1',  # Valor inicial: Tabla 1
         multi=False
     ),
-    html.P("Selecciona una variable de Analisis:"),
+    html.P("Selecciona una variable de análisis para obtener información relevante."),
     dcc.Dropdown(
         id='campo-dropdown',
         multi=False
@@ -70,7 +70,8 @@ def actualizar_grafico(tabla_seleccionada, campo_seleccionado):
         df_seleccionado = df4
 
     if campo_seleccionado is not None:
-        fig = px.bar(df_seleccionado, x=campo_seleccionado, title=f'Distribución de {campo_seleccionado}')
+        titulo_grafico = f'Distribución de {campo_seleccionado} en {tabla_seleccionada}'
+        fig = px.bar(df_seleccionado, x=campo_seleccionado, title=titulo_grafico)
     else:
         fig = px.bar()  # Gráfico vacío si no se ha seleccionado una columna
 

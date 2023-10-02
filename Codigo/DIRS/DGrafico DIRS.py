@@ -19,24 +19,41 @@ app = dash.Dash(__name__)
 # Definir el diseño de la aplicación
 app.layout = html.Div([
     html.H1('Visualización de Datos DIRS'),
-    html.P("Selecciona una variable combinada:"),
+    html.P("Selecciona una variable combinada para ver su distribución:"),
     dcc.Dropdown(
         id='campo-dropdown',
-        options=[{'label': columna, 'value': columna} for columna in data_combinada.columns],
+        options=[{'label': columna[:20], 'value': columna} for columna in data_combinada.columns],  # Limitar a 20 caracteres
         value=data_combinada.columns[0],  # Valor inicial: primera columna
         multi=False
     ),
-    dcc.Graph(id='grafico-circular')
+    dcc.Graph(id='grafico-circular'),
+    html.Div(id='descripcion-grafico')  # Aquí mostraremos la descripción del gráfico
 ])
 
-# Crear una función para actualizar el gráfico circular
+# Crear una función para limitar la cantidad de categorías mostradas y agrupar otras en "Otros"
+def limitar_categorias(data, campo_seleccionado, max_categorias=10):
+    conteo_valores = data[campo_seleccionado].value_counts()
+    etiquetas = conteo_valores.index.tolist()[:max_categorias]
+    valores = conteo_valores.tolist()[:max_categorias]
+    
+    if len(conteo_valores) > max_categorias:
+        etiquetas.append('Otros')
+        valores.append(sum(conteo_valores[max_categorias:]))
+    
+    return etiquetas, valores
+
+# Crear una función para actualizar el gráfico circular y su descripción
 @app.callback(
-    Output('grafico-circular', 'figure'),
+    [Output('grafico-circular', 'figure'), Output('descripcion-grafico', 'children')],
     Input('campo-dropdown', 'value')
 )
 def actualizar_grafico(campo_seleccionado):
-    fig = px.pie(data_combinada, names=campo_seleccionado, title=f'Distribución de {campo_seleccionado}')
-    return fig
+    etiquetas, valores = limitar_categorias(data_combinada, campo_seleccionado)
+    fig = px.pie(names=etiquetas, values=valores, title=f'Distribución de {campo_seleccionado}')
+    
+    descripcion = f"A continuación, se presenta la distribución de la variable '{campo_seleccionado}'. Este gráfico muestra cómo se divide la variable en diferentes categorías."
+    
+    return fig, html.P(descripcion)
 
 # Iniciar la aplicación
 if __name__ == '__main__':
